@@ -22,7 +22,7 @@ class IHeartRadioSkill(OVOSCommonPlaybackSkill):
         if media_type == MediaType.RADIO:
             base_score += 20
         elif media_type == MediaType.PODCAST:
-            return
+            return  # different specialized handler
 
         if self.voc_match(phrase, "iheart"):
             base_score += 50  # explicit request
@@ -50,19 +50,20 @@ class IHeartRadioSkill(OVOSCommonPlaybackSkill):
 
         if media_type == MediaType.PODCAST:
             base_score += 20
+        elif media_type == MediaType.RADIO:
+            return  # different specialized handler
         else:
-            return
+            base_score += 20
 
         if self.voc_match(phrase, "iheart"):
             base_score += 50  # explicit request
             phrase = self.remove_voc(phrase, "iheart")
 
         radio = IHeartRadio()
-        for podcast in radio.search_podcast("heavy metal hangover"):
+        for podcast in radio.search_podcast(phrase):
             score = base_score + \
                     fuzzy_match(podcast["title"].lower(), phrase.lower()) * 100
-            for ch in radio.get_podcast_episodes(podcast["id"]):
-                yield {
+            pl = [{
                     "match_confidence": min(100, score),
                     "media_type": MediaType.PODCAST,
                     "uri": ch["stream"],
@@ -74,6 +75,19 @@ class IHeartRadioSkill(OVOSCommonPlaybackSkill):
                     "title": ch["title"],
                     "author": podcast["title"],
                     "length": ch["duration"] * 1000,  # second to milisecond
+                } for ch in radio.get_podcast_episodes(podcast["id"])]
+
+            if pl:
+                yield {
+                    "match_confidence": min(100, score),
+                    "media_type": MediaType.PODCAST,
+                    "playlist": pl,
+                    "playback": PlaybackType.AUDIO,
+                    "skill_icon": self.skill_icon,
+                    "image": podcast["image"],
+                    "bg_image": podcast["image"],
+                    "title": podcast["title"] + " (Podcast)",
+                    "author": "IHeartRadio"
                 }
 
 
