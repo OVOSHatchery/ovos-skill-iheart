@@ -17,6 +17,12 @@ class IHeartRadioSkill(OVOSCommonPlaybackSkill):
 
     @ocp_search()
     def search_radio(self, phrase, media_type):
+        if self.location["city"]['state']["country"]["code"] != "US":
+            # only works for US users
+            # streams 404 in other ip addresses, this is a crude attempt of
+            # avoiding that
+            return  # TODO full country list
+
         base_score = 0
 
         if media_type == MediaType.RADIO:
@@ -53,7 +59,7 @@ class IHeartRadioSkill(OVOSCommonPlaybackSkill):
         elif media_type == MediaType.RADIO:
             return  # different specialized handler
         else:
-            base_score += 20
+            base_score -= 25
 
         if self.voc_match(phrase, "iheart"):
             base_score += 50  # explicit request
