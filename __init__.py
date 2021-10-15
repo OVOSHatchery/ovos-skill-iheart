@@ -29,6 +29,8 @@ class IHeartRadioSkill(OVOSCommonPlaybackSkill):
             base_score += 20
         elif media_type == MediaType.PODCAST:
             return  # different specialized handler
+        else:
+            base_score -= 20
 
         if self.voc_match(phrase, "iheart"):
             base_score += 50  # explicit request
@@ -59,7 +61,7 @@ class IHeartRadioSkill(OVOSCommonPlaybackSkill):
         elif media_type == MediaType.RADIO:
             return  # different specialized handler
         else:
-            base_score -= 25
+            base_score -= 35
 
         if self.voc_match(phrase, "iheart"):
             base_score += 50  # explicit request
